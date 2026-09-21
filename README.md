@@ -50,4 +50,18 @@ homework runner.
 
 ## Homework 1 solution: 
 > to students: please fill your solution description here.
+## Homework 1 solution
 
+### Chain Design Visualization
+
+```mermaid
+graph TD
+    A[Receipt Images Folder] --> B[LangChain .batch Processing]
+    B --> C[ChatPromptTemplate]
+    C -->|Q1: Final Payment & Q2: Subtotal + Discounts| D[ChatDeepSeek]
+    D -->|deepseek-v4-flash-vision-exp| E[StrOutputParser]
+    E --> F[Text Outputs]
+    F --> G[Regex Extraction in Python]
+    G --> H[Decimal Aggregation]
+    H --> I[Final Answer Dictionary]
+```

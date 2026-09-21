@@ -53,35 +53,59 @@ def image_data_url(path: Path) -> str:
 
 
 def build_chain() -> Any:
-    """Create and return your LangChain chain once.
+    """Create and return your LangChain chain once."""
+    from langchain_core.prompts import ChatPromptTemplate
+    from langchain_deepseek import ChatDeepSeek
+    from langchain_core.output_parsers import StrOutputParser
 
-    Suggested imports:
-        from langchain_core.prompts import ChatPromptTemplate
-        from langchain_deepseek import ChatDeepSeek
+    # 构建 prompt，明确指示模型提取我们需要的两个数字
+    prompt = ChatPromptTemplate.from_messages([
+        ("system", "You are an expert at reading supermarket receipts."),
+        ("human", [
+            {"type": "text", "text": "Analyze this supermarket receipt and extract exactly two numbers. \n"
+                                     "Q1: The final payment (after ROUNDING).\n"
+                                     "Q2: The SUBTOTAL plus every discount/promotion/coupon line added back as a positive number (do not add back ROUNDING).\n"
+                                     "Return exactly in this format, nothing else:\nQ1: <number>\nQ2: <number>"},
+            {"type": "image_url", "image_url": {"url": "{image_data}"}}
+        ])
+    ])
 
-    Use the vision-capable DeepSeek Flash model named
-    ``deepseek-v4-flash-vision-exp``. The API key is loaded from .env.
-    """
-    ### YOUR CODE HERE
-    return None
+    # 根据作业要求，初始化 DeepSeek 视觉模型
+    llm = ChatDeepSeek(model="deepseek-v4-flash-vision-exp", temperature=0.0)
+
+    # 返回组装好的处理链
+    return prompt | llm | StrOutputParser()
 
 
 def answer_queries(chain: Any, images: list[Path]) -> dict[str, Any]:
-    """Run your chain and return one response for each exact query string.
+    """Run your chain and return one response for each exact query string."""
+    import re
 
-    ``images`` contains every receipt in the selected folder. A valid return
-    value looks like:
+    total_q1 = Decimal("0.00")
+    total_q2 = Decimal("0.00")
 
-        {QUERY_1: "HK$123.40", QUERY_2: "HK$150.00"}
+    # 使用文件中提供的 image_data_url 工具将图片列表转换为模型需要的格式
+    inputs = [{"image_data": image_data_url(path)} for path in images]
 
-    Use the provided ``image_data_url(path)`` helper to put local images in
-    multimodal human messages. LangChain's ``batch`` method is one simple way
-    to process independent receipt-extraction prompts in parallel.
-    """
-    ### YOUR CODE HERE
-    _ = (chain, images)
-    return {QUERY_1: DUMMY_RESPONSE, QUERY_2: DUMMY_RESPONSE}
+    # 使用 LangChain 的 batch 方法并行处理所有图片，大大加快运行速度
+    print(f"正在并行分析 {len(images)} 张图片，请稍候...")
+    results = chain.batch(inputs)
 
+    # 遍历每张小票的分析结果，使用正则提取数字并累加
+    for text in results:
+        q1_match = re.search(r"Q1:\s*([\d.]+)", text)
+        q2_match = re.search(r"Q2:\s*([\d.]+)", text)
+
+        if q1_match:
+            total_q1 += Decimal(q1_match.group(1))
+        if q2_match:
+            total_q2 += Decimal(q2_match.group(1))
+
+    # 返回作业要求格式的字典，自动保留两位小数
+    return {
+        QUERY_1: str(total_q1.quantize(Decimal("0.01"))),
+        QUERY_2: str(total_q2.quantize(Decimal("0.01")))
+    }
 
 # Everything below is provided runner/scoring code. No edits are needed.
 
