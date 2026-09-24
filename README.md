@@ -54,9 +54,9 @@ homework runner.
 
 ```mermaid
 graph TD
-    A[Receipt Images Folder] --> B[LangChain .batch() Processing]
+    A[Receipt Images Folder] --> B["LangChain .batch() Processing"]
     B --> C[ChatPromptTemplate]
-    C -->|Q1: Final Payment & Q2: Subtotal + Discounts| D[ChatDeepSeek]
+    C -->|"Q1: Final Payment & Q2: Subtotal + Discounts"| D[ChatDeepSeek]
     D -->|deepseek-v4-flash-vision-exp| E[StrOutputParser]
     E --> F[Text Outputs]
     F --> G[Regex Extraction in Python]
@@ -69,10 +69,3 @@ To ensure computational accuracy and bypass the inherent limitations of Large La
 
 ---
 
-### Task 2: Reflection on Recent AI Events
-
-In the past 10 days, the rapid evolution and deployment of multimodal large language models—specifically the advancements in vision-capable models like DeepSeek-V4—have profoundly reshaped my perspective on quantitative research and my future career trajectory. 
-
-Previously, my quantitative workflows primarily revolved around highly structured numerical data. Whether I was building CTA trend-following algorithms, backtesting cross-sectional arbitrage strategies with historical minute-line data, or utilizing Markov-Switching Vector Autoregression models, the focus was always on structured time series. However, witnessing how effortlessly recent AI models can parse, reason, and extract precise financial figures directly from messy, unstructured visual data (as demonstrated in this receipt extraction pipeline) reveals a massive, untapped source of alpha in alternative data.
-
-This paradigm shift has directly influenced my career plan. Rather than solely focusing on optimizing traditional stochastic calculus models or static financial valuations, I now aim to integrate Agentic AI systems into quantitative pipelines. The ability to automate the ingestion and cleaning of complex, unstructured real-world datasets (such as raw earnings reports, visual supply chain data, or sentiment analysis from unstructured text) and feed them directly into quantitative risk models will be a critical edge. Moving forward, I plan to bridge deep learning architectures with traditional financial mathematics, aiming for roles where I can build fully automated, end-to-end AI-driven investment valuation and trading systems.
