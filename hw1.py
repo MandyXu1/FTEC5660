@@ -58,7 +58,7 @@ def build_chain() -> Any:
     from langchain_deepseek import ChatDeepSeek
     from langchain_core.output_parsers import StrOutputParser
 
-    # 构建 prompt，明确指示模型提取我们需要的两个数字
+    # Build the prompt, explicitly instructing the model to extract the two required numbers
     prompt = ChatPromptTemplate.from_messages([
         ("system", "You are an expert at reading supermarket receipts."),
         ("human", [
@@ -70,10 +70,10 @@ def build_chain() -> Any:
         ])
     ])
 
-    # 根据作业要求，初始化 DeepSeek 视觉模型
+    # Initialize the DeepSeek vision model as required by the homework
     llm = ChatDeepSeek(model="deepseek-v4-flash-vision-exp", temperature=0.0)
 
-    # 返回组装好的处理链
+    # Return the assembled processing chain
     return prompt | llm | StrOutputParser()
 
 
@@ -84,14 +84,14 @@ def answer_queries(chain: Any, images: list[Path]) -> dict[str, Any]:
     total_q1 = Decimal("0.00")
     total_q2 = Decimal("0.00")
 
-    # 使用文件中提供的 image_data_url 工具将图片列表转换为模型需要的格式
+    # Use the provided image_data_url utility to convert the list of images into the required model format
     inputs = [{"image_data": image_data_url(path)} for path in images]
 
-    # 使用 LangChain 的 batch 方法并行处理所有图片，大大加快运行速度
-    print(f"正在并行分析 {len(images)} 张图片，请稍候...")
+    # Use LangChain's batch method to process all images in parallel, significantly speeding up execution
+    print(f"Analyzing {len(images)} images in parallel, please wait...")
     results = chain.batch(inputs)
 
-    # 遍历每张小票的分析结果，使用正则提取数字并累加
+    # Iterate through the analysis results of each receipt, using regex to extract numbers and accumulate
     for text in results:
         q1_match = re.search(r"Q1:\s*([\d.]+)", text)
         q2_match = re.search(r"Q2:\s*([\d.]+)", text)
@@ -101,7 +101,7 @@ def answer_queries(chain: Any, images: list[Path]) -> dict[str, Any]:
         if q2_match:
             total_q2 += Decimal(q2_match.group(1))
 
-    # 返回作业要求格式的字典，自动保留两位小数
+    # Return the dictionary in the format required by the homework, automatically keeping two decimal places
     return {
         QUERY_1: str(total_q1.quantize(Decimal("0.01"))),
         QUERY_2: str(total_q2.quantize(Decimal("0.01")))
